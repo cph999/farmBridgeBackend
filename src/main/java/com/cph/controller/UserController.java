@@ -3,6 +3,7 @@ package com.cph.controller;
 import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cph.aspect.RecognizeAddress;
 import com.cph.common.CommonResult;
 import com.cph.config.GlobalConfig;
 import com.cph.entity.User;
@@ -97,5 +98,14 @@ public class UserController {
 
         return new CommonResult<>(200,"验证码发送成功",phone);
     }
+
+
+    @PostMapping("/searchUser")
+    @RecognizeAddress
+    public CommonResult search(@RequestBody User user) {
+        QueryWrapper<User> like = new QueryWrapper<User>().like("nickname", user.getNickname()).or().like("username", user.getUsername()).orderByDesc("id");
+        return new CommonResult(200, "查询成功", userMapper.selectList(like));
+    }
+
 
 }

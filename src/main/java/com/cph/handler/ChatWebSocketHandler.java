@@ -1,5 +1,8 @@
 package com.cph.handler;
 
+import com.cph.entity.Message;
+import com.cph.mapper.MessageMapper;
+import com.cph.utils.SpringContextUtil;
 import com.google.gson.Gson;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -30,17 +33,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-//        MessageMapper messageMapper = SpringContextUtil.getBean(MessageMapper.class);
-//        String payload = message.getPayload();
-//        Gson gson = new Gson();
-//        Message m = gson.fromJson(payload, Message.class);
-//        messageMapper.insert(m);
+        MessageMapper messageMapper = SpringContextUtil.getBean(MessageMapper.class);
+        String payload = message.getPayload();
+        Gson gson = new Gson();
+        Message m = gson.fromJson(payload, Message.class);
+        messageMapper.insert(m);
 
-        // 将接收到的消息发送给指定用户
-//        WebSocketSession targetSession = sessions.get(m.getToId().toString());
-//        if (targetSession != null && targetSession.isOpen()) {
-//            targetSession.sendMessage(new TextMessage(gson.toJson(m)));
-//        }
+//         将接收到的消息发送给指定用户
+        WebSocketSession targetSession = sessions.get(m.getToId().toString());
+        if (targetSession != null && targetSession.isOpen()) {
+            targetSession.sendMessage(new TextMessage(gson.toJson(m)));
+        }
 
         session.sendMessage(message);
     }
