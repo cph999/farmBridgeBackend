@@ -3,6 +3,7 @@ package com.cph.controller;
 import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cph.aspect.RecognizeAddress;
 import com.cph.common.CommonResult;
 import com.cph.entity.Post;
 import com.cph.entity.search.PostSearch;
@@ -26,6 +27,7 @@ public class PostController {
     private List<String> categories = Arrays.asList("all", "niu", "yang", "zhu", "ya");
 
     @RequestMapping("/getPostList")
+    @RecognizeAddress
     public CommonResult getPostList(@RequestBody PostSearch postSearch) {
         LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(!StringUtils.isBlank(postSearch.getSearch()), Post::getDescription, postSearch.getSearch());
@@ -41,6 +43,13 @@ public class PostController {
         return new CommonResult(200, "查询成功", null, resultPage.getRecords(), resultPage.getTotal());
     }
 
+    @RequestMapping("/popularData")
+    public CommonResult getPopularData(){
+        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.last("limit 5").orderByDesc(Post::getCreatedTime);
+        List<Post> posts = postMapper.selectList(wrapper);
+        return new CommonResult(200,"查询成功",posts);
+    }
 
     @RequestMapping("/getCategory")
     public CommonResult getCategory() {
