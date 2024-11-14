@@ -30,4 +30,7 @@ public class Message {
     @TableField(exist = false)
     private String showTime;
 
+    //消息类型 支持 str,image,card,location
+    private String type;
+
 }

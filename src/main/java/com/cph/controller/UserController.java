@@ -13,9 +13,13 @@ import com.cph.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 @RestController
@@ -27,6 +31,13 @@ public class UserController {
 
     @Value("${env.name}")
     private String env;
+
+    @Value("${file.upload.path}")
+    private String path;
+
+    @Value("${file.upload.url}")
+    private String url;
+
 
     @PostMapping("/login")
 
@@ -105,6 +116,37 @@ public class UserController {
     public CommonResult search(@RequestBody User user) {
         QueryWrapper<User> like = new QueryWrapper<User>().like("nickname", user.getNickname()).or().like("username", user.getUsername()).orderByDesc("id");
         return new CommonResult(200, "查询成功", userMapper.selectList(like));
+    }
+
+    @PostMapping("/uploadFile")
+    public Object uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+
+        String fileName = storageFile(file);
+        HashMap<String, String> res = new HashMap<>();
+        res.put("url", url + fileName);
+
+//        return new CommonResult(200, "上传成功", res);
+        res.put("url","https://app102.acapp.acwing.com.cn/media/1729242815102.png");
+        return new CommonResult(200, "上传成功", res);
+    }
+
+    public String storageFile(MultipartFile file) throws IOException {
+
+        if (file.isEmpty()) {
+            return "{\"error\": \"请选择一个文件上传\"}";
+        }
+
+        String fileName = file.getOriginalFilename();
+        // 指定文件保存路径
+        String uploadDir = path;
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        // 保存文件
+        File destFile = new File(dir.getAbsolutePath() + File.separator + fileName);
+        file.transferTo(destFile);
+        return fileName;
     }
 
 

@@ -28,4 +28,4 @@ public class Post {
     private String categoryCode;
     private String categoryName;
 
-}
+}   
