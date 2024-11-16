@@ -32,5 +32,7 @@ public class Message {
 
     //消息类型 支持 str,image,card,location
     private String type;
+    //0：未读 1：已读
+    private String state;
 
 }

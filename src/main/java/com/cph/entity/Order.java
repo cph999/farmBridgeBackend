@@ -28,6 +28,8 @@ public class Order {
     private Integer oAmount;
     private Double totalPrice;
 
+    //订单状态 0:已创建 1:已支付 2:交易失败 3：交易完成
+    private Integer state;
 
 
 }

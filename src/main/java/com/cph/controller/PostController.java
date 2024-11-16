@@ -50,10 +50,4 @@ public class PostController {
         List<Post> posts = postMapper.selectList(wrapper);
         return new CommonResult(200,"查询成功",posts);
     }
-
-    @RequestMapping("/getCategory")
-    public CommonResult getCategory() {
-
-        return new CommonResult(200, "success", postMapper.selectList(null));
-    }
 }

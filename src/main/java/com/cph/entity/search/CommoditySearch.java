@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class PostSearch extends BaseSearch{
+public class CommoditySearch extends BaseSearch{
     private String search;
-    private String categoryCode;
 }

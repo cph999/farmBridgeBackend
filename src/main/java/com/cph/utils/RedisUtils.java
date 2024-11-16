@@ -32,6 +32,13 @@ public class RedisUtils {
         return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value));
     }
 
+    public static boolean unlock(String key) {
+        key = redisPrefix + key;
+        // 删除 Redis 中的锁
+        redisTemplate.delete(key);
+        return true;
+    }
+
     /**
      * @description 释放锁
      * @param key, value
