@@ -2,6 +2,7 @@ package com.cph.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -9,8 +10,9 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
+@TableName("order_make")
 //初步 一个订单只有一个sku
-public class Order {
+public class OrderMake {
     //订单id
     @TableId(type = IdType.AUTO, value = "id")
     private Integer id;
@@ -28,8 +30,13 @@ public class Order {
     private Integer oAmount;
     private Double totalPrice;
 
-    //订单状态 0:已创建 1:已支付 2:交易失败 3：交易完成
+    //订单状态 1:待支付  2:待发货 3：已完成 4: 交易失败
     private Integer state;
+
+    private String commodityName;
+    private String commodityImages;
+    private String commodityDescription;
+    private Double unitPrice;
 
 
 }

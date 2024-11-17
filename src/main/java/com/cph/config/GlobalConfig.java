@@ -1,7 +1,5 @@
 package com.cph.config;
 
-import com.cph.entity.Order;
-
 /**
  * 全局配置
  */

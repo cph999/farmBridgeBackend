@@ -22,5 +22,6 @@ public class User {
     private String token;
     private Date lastLoginTime;
     private String phone;
+    private String address;
 
 }
