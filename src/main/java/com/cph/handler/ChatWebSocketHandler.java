@@ -1,7 +1,13 @@
 package com.cph.handler;
 
+import com.alibaba.excel.util.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cph.entity.Message;
+import com.cph.entity.PostBid;
+import com.cph.entity.User;
 import com.cph.mapper.MessageMapper;
+import com.cph.mapper.PostBidMapper;
+import com.cph.mapper.UserMapper;
 import com.cph.utils.SpringContextUtil;
 import com.google.gson.Gson;
 import org.springframework.web.socket.CloseStatus;
@@ -37,6 +43,30 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String payload = message.getPayload();
         Gson gson = new Gson();
         Message m = gson.fromJson(payload, Message.class);
+        if (StringUtils.isBlank(m.getToIcon()) || StringUtils.isBlank(m.getToNickname())) {
+            UserMapper userMapper = SpringContextUtil.getBean(UserMapper.class);
+            User user = userMapper.selectById(m.getToId());
+            m.setToIcon(user.getCover()).setToNickname(user.getNickname());
+        }
+        //竞价消息
+        if ("bid".equals(m.getType())) {
+            PostBidMapper postBidMapper = SpringContextUtil.getBean(PostBidMapper.class);
+            PostBid postBid = gson.fromJson(m.getMessage(), PostBid.class);
+            postBid.setFromId(m.getFromId()).setToId(m.getToId());
+
+            QueryWrapper<PostBid> wrapper = new QueryWrapper<>();
+            wrapper.eq("from_id", postBid.getFromId()).eq("to_id", postBid.getToId()).eq("order_id", postBid.getOrderId());
+            PostBid postBid1 = postBidMapper.selectOne(wrapper);
+            if (postBid1 == null) {
+                if (1 == postBid.getChatRestrictState()) {
+                    postBidMapper.insert(postBid);
+                } else {
+                    postBidMapper.updateById(postBid);
+                }
+            } else {
+                postBidMapper.updateById(postBid1);
+            }
+        }
         messageMapper.insert(m);
 
 //         将接收到的消息发送给指定用户
