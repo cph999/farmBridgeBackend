@@ -48,22 +48,36 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             User user = userMapper.selectById(m.getToId());
             m.setToIcon(user.getCover()).setToNickname(user.getNickname());
         }
+
         //竞价消息
-        if ("bid".equals(m.getType())) {
+        if ("bid".equals(m.getType()) || "bid-reply".equals(m.getType())) {
             PostBidMapper postBidMapper = SpringContextUtil.getBean(PostBidMapper.class);
             PostBid postBid = gson.fromJson(m.getMessage(), PostBid.class);
+            if ("bid-reply".equals(m.getType())) {
+                Map<String, String> map = gson.fromJson(m.getMessage(), Map.class);
+                postBid = gson.fromJson(map.get("message"), PostBid.class);
+            }
             postBid.setFromId(m.getFromId()).setToId(m.getToId());
-
             QueryWrapper<PostBid> wrapper = new QueryWrapper<>();
             wrapper.eq("from_id", postBid.getFromId()).eq("to_id", postBid.getToId()).eq("order_id", postBid.getOrderId());
             PostBid postBid1 = postBidMapper.selectOne(wrapper);
             if (postBid1 == null) {
-                if (1 == postBid.getChatRestrictState()) {
-                    postBidMapper.insert(postBid);
+                QueryWrapper<PostBid> wrapperA = new QueryWrapper<>();
+                wrapperA.eq("from_id", postBid.getToId()).eq("to_id", postBid.getFromId()).eq("order_id", postBid.getOrderId());
+                PostBid postBid2 = postBidMapper.selectOne(wrapperA);
+                if (postBid2 != null) {
+                    postBid2.setChatRestrictState(postBid.getChatRestrictState());
+                    postBid2.setBidPrice(postBid.getBidPrice());
+                    postBidMapper.updateById(postBid2);
+                    m.setMessage(gson.toJson(postBid2));
                 } else {
-                    postBidMapper.updateById(postBid);
+                    postBidMapper.insert(postBid);
+                    m.setMessage(gson.toJson(postBid));
                 }
             } else {
+                postBid1.setChatRestrictState(postBid.getChatRestrictState());
+                postBid1.setBidPrice(postBid.getBidPrice());
+                m.setMessage(gson.toJson(postBid1));
                 postBidMapper.updateById(postBid1);
             }
         }

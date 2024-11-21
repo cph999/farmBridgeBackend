@@ -19,7 +19,7 @@ public class Post {
     private String userCover;
 
     private Date createdTime;
-    private String  description;
+    private String description;
     private String images;
 
     private String locationCoordinate;

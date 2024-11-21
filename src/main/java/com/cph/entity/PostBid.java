@@ -1,6 +1,7 @@
 package com.cph.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -37,5 +38,14 @@ public class PostBid {
     private String categoryCode;
     private String categoryName;
     private String bidPrice;
+
+    /**
+     * 1: 正在报价
+     * 2：报价结束 等待对方回应
+     * 3：接受报价
+     * 4：拒绝报价
+     * 5: 订单完成
+     */
+    @TableField(value = "chat_restrict_state")
     private Integer chatRestrictState;
 }
