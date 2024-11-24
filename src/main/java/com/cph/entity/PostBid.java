@@ -39,6 +39,8 @@ public class PostBid {
     private String categoryName;
     private String bidPrice;
 
+    private Date createdTime;
+    private Date updateTime;
     /**
      * 1: 正在报价
      * 2：报价结束 等待对方回应

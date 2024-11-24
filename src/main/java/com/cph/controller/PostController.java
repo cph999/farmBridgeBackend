@@ -11,19 +11,24 @@ import com.cph.entity.Post;
 import com.cph.entity.PostBid;
 import com.cph.entity.User;
 import com.cph.entity.search.PostSearch;
+import com.cph.entity.vo.PostBidVo;
 import com.cph.mapper.PostBidMapper;
 import com.cph.mapper.PostMapper;
 import com.google.gson.Gson;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -92,4 +97,14 @@ public class PostController {
         postMapper.insert(post);
         return new CommonResult(200, "报价状态查询成功", post);
     }
+
+    @PostMapping("/history")
+    @RecognizeAddress
+    public CommonResult statisticData() {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        Date startDate = Date.from(thirtyDaysAgo.atZone(ZoneId.systemDefault()).toInstant());
+        List<PostBidVo> postBidVos = postBidMapper.statisticData(startDate);
+        return new CommonResult(200,"查询成功",null,postBidVos);
+    }
+
 }

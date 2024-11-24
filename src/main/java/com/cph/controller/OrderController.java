@@ -8,6 +8,7 @@ import com.cph.common.CommonResult;
 import com.cph.config.GlobalConfig;
 import com.cph.entity.Commodity;
 import com.cph.entity.OrderMake;
+import com.cph.entity.PostBid;
 import com.cph.entity.User;
 import com.cph.entity.search.OrderSearch;
 import com.cph.mapper.CommodityMapper;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
 
@@ -61,7 +64,6 @@ public class OrderController {
             RedisUtils.unlock(GlobalConfig.REDIS_LOCK_COMMODITY_ORDER + commodity.getId());
         }
     }
-
     /**
      * 模拟支付成功
      * @param order

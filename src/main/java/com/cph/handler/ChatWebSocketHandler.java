@@ -16,6 +16,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -49,11 +50,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             m.setToIcon(user.getCover()).setToNickname(user.getNickname());
         }
 
-        //竞价消息
-        if ("bid".equals(m.getType()) || "bid-reply".equals(m.getType())) {
+        // 处理竞价消息
+        if ("bid".equals(m.getType()) || "bid-reply".equals(m.getType()) || "complete-bid".equals(m.getType())) {
             PostBidMapper postBidMapper = SpringContextUtil.getBean(PostBidMapper.class);
             PostBid postBid = gson.fromJson(m.getMessage(), PostBid.class);
-            if ("bid-reply".equals(m.getType())) {
+            if ("bid-reply".equals(m.getType()) || "complete-bid".equals(m.getType())) {
                 Map<String, String> map = gson.fromJson(m.getMessage(), Map.class);
                 postBid = gson.fromJson(map.get("message"), PostBid.class);
             }
@@ -66,8 +67,23 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 wrapperA.eq("from_id", postBid.getToId()).eq("to_id", postBid.getFromId()).eq("order_id", postBid.getOrderId());
                 PostBid postBid2 = postBidMapper.selectOne(wrapperA);
                 if (postBid2 != null) {
+                    if (postBid2.getChatRestrictState() == 5) {
+                        // 如果 chatRestrictState == 5，给发送者发送一条通知消息
+                        Message notification = new Message();
+                        notification.setFromId(m.getToId());
+                        notification.setToId(m.getFromId());
+                        notification.setType("str");
+                        notification.setMessage("该交易已经处理，您的所有行为都将失效");
+                        notification.setCreatedTime(new Date());
+                        // 将通知消息发送给发送者
+                        WebSocketSession senderSession = sessions.get(m.getFromId().toString());
+                        if (senderSession != null && senderSession.isOpen()) {
+                            senderSession.sendMessage(new TextMessage(gson.toJson(notification)));
+                        }
+                    }
                     postBid2.setChatRestrictState(postBid.getChatRestrictState());
                     postBid2.setBidPrice(postBid.getBidPrice());
+                    postBid2.setUpdateTime(new Date());
                     postBidMapper.updateById(postBid2);
                     m.setMessage(gson.toJson(postBid2));
                 } else {
@@ -75,15 +91,31 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     m.setMessage(gson.toJson(postBid));
                 }
             } else {
+                if (postBid1.getChatRestrictState() == 5) {
+                    // 如果 chatRestrictState == 5，给发送者发送一条通知消息
+                    Message notification = new Message();
+                    notification.setFromId(m.getToId());
+                    notification.setToId(m.getFromId());
+                    notification.setType("str");
+                    notification.setMessage("该交易已经处理,您的所有行为都将失效！");
+                    notification.setCreatedTime(new Date());
+                    // 将通知消息发送给发送者
+                    WebSocketSession senderSession = sessions.get(m.getFromId().toString());
+                    if (senderSession != null && senderSession.isOpen()) {
+                        senderSession.sendMessage(new TextMessage(gson.toJson(notification)));
+                    }
+                }
                 postBid1.setChatRestrictState(postBid.getChatRestrictState());
                 postBid1.setBidPrice(postBid.getBidPrice());
+                postBid1.setUpdateTime(new Date());
                 m.setMessage(gson.toJson(postBid1));
                 postBidMapper.updateById(postBid1);
             }
         }
+
         messageMapper.insert(m);
 
-//         将接收到的消息发送给指定用户
+        // 将接收到的消息发送给指定用户
         WebSocketSession targetSession = sessions.get(m.getToId().toString());
         if (targetSession != null && targetSession.isOpen()) {
             targetSession.sendMessage(new TextMessage(gson.toJson(m)));

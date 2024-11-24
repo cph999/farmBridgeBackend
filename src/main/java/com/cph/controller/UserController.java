@@ -125,7 +125,7 @@ public class UserController {
         HashMap<String, String> res = new HashMap<>();
         res.put("url", url + fileName);
 
-        res.put("url","https://app102.acapp.acwing.com.cn/media/1729242815102.png");
+//        res.put("url","https://app102.acapp.acwing.com.cn/media/1729242815102.png");
         return new CommonResult(200, "上传成功", res);
     }
 
