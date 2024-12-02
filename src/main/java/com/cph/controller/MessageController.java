@@ -25,6 +25,10 @@ public class MessageController {
     @Autowired
     MessageMapper messagesMapper;
 
+    /**
+     * 查询当前用户的全部对话框
+     * @return
+     */
     @PostMapping("/messages")
     @RecognizeAddress
     public CommonResult getAllMessages() {
@@ -73,7 +77,6 @@ public class MessageController {
      * @param map
      * @return
      */
-
     @PostMapping("/messagesByDialog")
     @RecognizeAddress
     public CommonResult getAllMessagesByDialog(@RequestBody Map map) {
@@ -94,37 +97,10 @@ public class MessageController {
         Integer finalOtherId = otherId;
         messages = messages.stream().filter(m -> Objects.equals(m.getFromId(), finalOtherId)
                 || Objects.equals(m.getToId(), finalOtherId)).collect(Collectors.toList());
-
-
-        // 将对话按照无序的 from_id 和 to_id 进行分组
-        Map<String, List<Message>> collect = messages.stream()
-                .collect(Collectors.groupingBy(m -> {
-                    Long minId = (long) Math.min(m.getFromId(), m.getToId());
-                    Long maxId = (long) Math.max(m.getFromId(), m.getToId());
-                    return minId + " " + maxId;
-                }));
+        messages.sort(Comparator.comparing(Message::getCreatedTime));
 
         ArrayList<List<Message>> lists = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
-
-        collect.values().forEach(temp -> {
-            if (!CollectionUtils.isEmpty(temp)) {
-                lists.add(temp.stream()
-                        .sorted(Comparator.comparing(Message::getCreatedTime))  // 按照创建时间排序
-                        .map(m -> {
-                            String formattedDate = sdf.format(m.getCreatedTime());
-                            m.setShowTime(formattedDate);
-                            return m;
-                        })
-                        .collect(Collectors.toList()));
-            }
-        });
-
-        // 最终按照最新消息的创建时间对对话框进行排序
-        List<List<Message>> messageList = lists.stream()
-                .sorted((a, b) -> b.get(0).getCreatedTime().compareTo(a.get(0).getCreatedTime()))
-                .collect(Collectors.toList());
-
-        return new CommonResult(200, "success", messageList);
+        lists.add(messages);
+        return new CommonResult(200, "success", lists);
     }
 }

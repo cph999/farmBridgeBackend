@@ -1,5 +1,6 @@
 package com.cph.utils;
 
+import com.cph.common.CommonResult;
 import com.cph.config.GlobalConfig;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
@@ -695,5 +696,21 @@ public class RedisUtils {
      */
     public static void convertAndSend(String channel, Object message){
         redisTemplate.convertAndSend(channel, message);
+    }
+
+    /**
+     * 限流
+     * @param key
+     * @param limit
+     * @param interval
+     */
+    public static Boolean limitFlow(String key, int limit, int interval){
+        Long currentTime = new Date().getTime();
+        if (redisTemplate.hasKey(key)) {
+            Integer count = redisTemplate.opsForZSet().rangeByScore("limit", currentTime - interval, currentTime).size();
+            if( count > limit) return false;
+        }
+        redisTemplate.opsForZSet().add(key, UUID.randomUUID().toString(), currentTime);
+        return true;
     }
 }

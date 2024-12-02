@@ -1,9 +1,6 @@
-package com.cph.entity;
+package com.cph.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -11,9 +8,7 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-@TableName("post_bid")
-public class PostBid {
-    @TableId(type = IdType.AUTO, value = "id")
+public class PostBidMessageVo {
     private Integer id;
 
     private Integer fromId;
@@ -38,8 +33,8 @@ public class PostBid {
     private String categoryName;
     private String bidPrice;
 
-    private Date createdTime;
-    private Date updateTime;
+    private String createdTime;
+    private String updateTime;
     /**
      * 1: 正在报价
      * 2：报价结束 等待对方回应
@@ -47,6 +42,5 @@ public class PostBid {
      * 4：拒绝报价
      * 5: 订单完成
      */
-    @TableField(value = "chat_restrict_state")
     private Integer chatRestrictState;
 }

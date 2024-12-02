@@ -5,19 +5,23 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cph.entity.Message;
 import com.cph.entity.PostBid;
 import com.cph.entity.User;
+import com.cph.entity.vo.PostBidMessageVo;
 import com.cph.mapper.MessageMapper;
 import com.cph.mapper.PostBidMapper;
 import com.cph.mapper.UserMapper;
 import com.cph.utils.SpringContextUtil;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -53,11 +57,20 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 处理竞价消息
         if ("bid".equals(m.getType()) || "bid-reply".equals(m.getType()) || "complete-bid".equals(m.getType())) {
             PostBidMapper postBidMapper = SpringContextUtil.getBean(PostBidMapper.class);
+//            PostBidMessageVo postBidMessageVo = gson.fromJson(m.getMessage(), PostBidMessageVo.class);
             PostBid postBid = gson.fromJson(m.getMessage(), PostBid.class);
             if ("bid-reply".equals(m.getType()) || "complete-bid".equals(m.getType())) {
                 Map<String, String> map = gson.fromJson(m.getMessage(), Map.class);
                 postBid = gson.fromJson(map.get("message"), PostBid.class);
             }
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+//            dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+//            if(!StringUtils.isBlank(postBidMessageVo.getCreatedTime())){
+//                postBid.setCreatedTime( dateFormat.parse(postBidMessageVo.getCreatedTime()));
+//            }
+//            if(!StringUtils.isBlank(postBidMessageVo.getUpdateTime())){
+//                postBid.setUpdateTime( dateFormat.parse(postBidMessageVo.getUpdateTime()));
+//            }
             postBid.setFromId(m.getFromId()).setToId(m.getToId());
             QueryWrapper<PostBid> wrapper = new QueryWrapper<>();
             wrapper.eq("from_id", postBid.getFromId()).eq("to_id", postBid.getToId()).eq("order_id", postBid.getOrderId());
